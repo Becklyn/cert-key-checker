@@ -1,6 +1,7 @@
 {
     "name": "becklyn/cert-key-matcher",
     "description": "Checks that a certificate / key / csr matches in a given directory.",
+    "license": "BSD-3-Clause",
     "require": {
         "php": "^7.1",
         "symfony/console": "^3.3 | ^4.0"
