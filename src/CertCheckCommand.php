@@ -36,33 +36,32 @@ class CertCheckCommand extends Command
 
         try {
             $checker = new CertificateChecker(\getcwd());
-            $signatures = $checker->getSignature();
-            $detectedFiles = $signatures->getDetectedFiles();
+            $signatures = $checker->getSignatures();
 
-            if (!empty($detectedFiles))
+            if ($signatures->hasDetectedFiles())
             {
                 $io->table(
                     [
-                        "Type", "Path"
+                        "Type", "File Name", "Digest"
                     ],
-                    $this->formatTable($detectedFiles)
+                    $signatures->formatAsTable()
                 );
+            }
+
+            if ($signatures->isInconclusive())
+            {
+                $io->error("Inconclusive result: not enough files found.");
+                return 1;
             }
 
             if ($signatures->isValid())
             {
-                $io->text(sprintf(
-                    "Digest: <fg=blue>%s</>",
-                    $signatures->getDigest()
-                ));
-                $io->success("Cert matched");
+                $io->success("All digests match");
                 return 0;
             }
-            else
-            {
-                $io->error("Certificate mismatch");
-                return 1;
-            }
+
+            $io->error("Digest mismatch");
+            return 1;
         }
         catch (\RuntimeException $e)
         {
@@ -82,11 +81,12 @@ class CertCheckCommand extends Command
     {
         $rows = [];
 
-        foreach ($detectedFiles as $type => $filePath)
+        foreach ($detectedFiles as $type => $data)
         {
             $rows[] = [
                 "<fg=yellow>{$type}</>",
-                $filePath
+                $data["fileName"],
+                $data["digest"]
             ];
         }
 

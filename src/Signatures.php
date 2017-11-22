@@ -6,57 +6,23 @@ namespace Becklyn\CertKeyChecker;
 class Signatures
 {
     /**
-     * @var string
-     */
-    private $certSignature;
-
-
-    /**
-     * @var string
-     */
-    private $keySignature;
-
-
-    /**
-     * @var string
-     */
-    private $csrSignature;
-
-
-    /**
-     * @var array<string, string>
+     * @var array<string, array>
      */
     private $detectedFiles = [];
 
 
     /**
-     *
-     * @param string $certSignature
-     * @param string $keySignature
-     */
-    public function __construct (string $certSignature, string $keySignature)
-    {
-        $this->certSignature = $certSignature;
-        $this->keySignature = $keySignature;
-    }
-
-
-    /**
-     * @param string $csrSignature
-     */
-    public function setCsrSignature (string $csrSignature) : void
-    {
-        $this->csrSignature = $csrSignature;
-    }
-
-
-    /**
      * @param string $type
      * @param string $fileName
+     * @param string $digest
      */
-    public function addDetectedFile (string $type, string $fileName) : void
+    public function addDetectedFile (string $type, string $fileName, string $digest) : void
     {
-        $this->detectedFiles[$type] = $fileName;
+        $this->detectedFiles[] = [
+            "type" => $type,
+            "fileName" => $fileName,
+            "digest" => $digest,
+        ];
     }
 
 
@@ -67,29 +33,62 @@ class Signatures
      */
     public function isValid () : bool
     {
-        if ($this->keySignature !== $this->certSignature)
+        if ($this->isInconclusive())
         {
             return false;
         }
 
-        return (null === $this->csrSignature) || ($this->csrSignature === $this->certSignature);
+        $first = reset($this->detectedFiles)["digest"];
+
+        foreach ($this->detectedFiles as $file)
+        {
+            if ($file["digest"] !== $first)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
 
     /**
-     * @return string
+     * Returns whether the check is significant
+     *
+     * @return bool
      */
-    public function getDigest () : string
+    public function isInconclusive () : bool
     {
-        return md5($this->keySignature);
+        return 1 >= count($this->detectedFiles);
     }
 
 
     /**
+     * @return bool
+     */
+    public function hasDetectedFiles () : bool
+    {
+        return !empty($this->detectedFiles);
+    }
+
+
+    /**
+     * Formats the data as table
+     *
      * @return array
      */
-    public function getDetectedFiles () : array
+    public function formatAsTable () : array
     {
-        return $this->detectedFiles;
+        return \array_map(
+            function ($data)
+            {
+                return [
+                    sprintf("<fg=yellow>%s</>", $data["type"]),
+                    $data["fileName"],
+                    sprintf("<fg=blue>%s</>", md5($data["digest"]))
+                ];
+            },
+            $this->detectedFiles
+        );
     }
 }

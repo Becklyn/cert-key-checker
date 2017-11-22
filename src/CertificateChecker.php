@@ -62,32 +62,35 @@ class CertificateChecker
     /**
      * @return string
      */
-    public function getSignature () : Signatures
+    public function getSignatures () : Signatures
     {
-        if (null === $this->key)
+        $signatures = new Signatures();
+
+        if (null !== $this->key)
         {
-            throw new \RuntimeException("No key file found.");
+            $signatures->addDetectedFile(
+                "key",
+                $this->relativeFilePath($this->key),
+                shell_exec('openssl rsa -noout -modulus -in ' . escapeshellarg($this->key))
+            );
         }
 
-        if (null === $this->cert)
+        if (null !== $this->cert)
         {
-            throw new \RuntimeException("No cert file found.");
+            $signatures->addDetectedFile(
+                "cert",
+                $this->relativeFilePath($this->cert),
+                shell_exec('openssl x509 -noout -modulus -in ' . escapeshellarg($this->cert))
+            );
         }
-
-        $signatures = new Signatures(
-            shell_exec('openssl x509 -noout -modulus -in ' . escapeshellarg($this->cert)),
-            shell_exec('openssl rsa -noout -modulus -in ' . escapeshellarg($this->key))
-        );
-
-        $signatures->addDetectedFile("key", $this->relativeFilePath($this->key));
-        $signatures->addDetectedFile("cert", $this->relativeFilePath($this->cert));
 
         if (null !== $this->csr)
         {
-            $signatures->setCsrSignature(
+            $signatures->addDetectedFile(
+                "csr",
+                $this->relativeFilePath($this->csr),
                 shell_exec('openssl req -noout -modulus -in ' . escapeshellarg($this->csr))
             );
-            $signatures->addDetectedFile("csr", $this->relativeFilePath($this->csr));
         }
 
         return $signatures;
