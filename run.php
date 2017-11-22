@@ -1,6 +1,10 @@
 <?php
 
-require __DIR__ . "/vendor/autoload.php";
+
+if (is_file($autoloader = __DIR__ . "/vendor/autoload.php"))
+{
+    require $autoloader;
+}
 
 use Symfony\Component\Console\Application;
 
