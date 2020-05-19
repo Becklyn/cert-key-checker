@@ -6,6 +6,9 @@
         "php": "^7.4",
         "symfony/console": "^5.0"
     },
+    "config": {
+        "sort-packages": true
+    },
     "autoload": {
         "psr-4": {
             "Becklyn\\CertKeyChecker\\": "src/"
