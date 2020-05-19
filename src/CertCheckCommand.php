@@ -1,13 +1,11 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Becklyn\CertKeyChecker;
-
 
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-
 
 class CertCheckCommand extends Command
 {
@@ -16,7 +14,7 @@ class CertCheckCommand extends Command
     /**
      * @inheritDoc
      */
-    protected function configure ()
+    protected function configure () : void
     {
         $this
             ->setName(self::$defaultName)
@@ -34,16 +32,15 @@ class CertCheckCommand extends Command
         $io->title("Check certificates");
 
 
-        try {
+        try
+        {
             $checker = new CertificateChecker(\getcwd());
             $signatures = $checker->getSignatures();
 
             if ($signatures->hasDetectedFiles())
             {
                 $io->table(
-                    [
-                        "Type", "File Name", "Digest"
-                    ],
+                    ["Type", "File Name", "Digest"],
                     $signatures->formatAsTable()
                 );
             }
@@ -73,9 +70,6 @@ class CertCheckCommand extends Command
 
     /**
      * Formats the table for detected files
-     *
-     * @param array $detectedFiles
-     * @return array
      */
     private function formatTable (array $detectedFiles) : array
     {
@@ -86,7 +80,7 @@ class CertCheckCommand extends Command
             $rows[] = [
                 "<fg=yellow>{$type}</>",
                 $data["fileName"],
-                $data["digest"]
+                $data["digest"],
             ];
         }
 
