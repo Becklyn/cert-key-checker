@@ -1,23 +1,30 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Becklyn\CertKeyChecker;
 
+use Becklyn\CertKeyChecker\Exception\DigestGenerationException;
 
 class Signatures
 {
     /**
-     * @var array<string, array>
+     * @var array[]
      */
     private $detectedFiles = [];
 
 
     /**
-     * @param string $type
-     * @param string $fileName
-     * @param string $digest
      */
-    public function addDetectedFile (string $type, string $fileName, string $digest) : void
+    public function addDetectedFile (string $type, string $fileName, ?string $digest) : void
     {
+        if (null === $digest)
+        {
+            throw new DigestGenerationException(\sprintf(
+                "Digest generation failed for file '%s' of type '%s'",
+                $fileName,
+                $type
+            ));
+        }
+
         $this->detectedFiles[] = [
             "type" => $type,
             "fileName" => $fileName,
@@ -28,8 +35,6 @@ class Signatures
 
     /**
      * Returns whether the signatures are valid
-     *
-     * @return bool
      */
     public function isValid () : bool
     {
@@ -38,7 +43,7 @@ class Signatures
             return false;
         }
 
-        $first = reset($this->detectedFiles)["digest"];
+        $first = \reset($this->detectedFiles)["digest"];
 
         foreach ($this->detectedFiles as $file)
         {
@@ -54,17 +59,14 @@ class Signatures
 
     /**
      * Returns whether the check is significant
-     *
-     * @return bool
      */
     public function isInconclusive () : bool
     {
-        return 1 >= count($this->detectedFiles);
+        return 1 >= \count($this->detectedFiles);
     }
 
 
     /**
-     * @return bool
      */
     public function hasDetectedFiles () : bool
     {
@@ -74,8 +76,6 @@ class Signatures
 
     /**
      * Formats the data as table
-     *
-     * @return array
      */
     public function formatAsTable () : array
     {
@@ -83,9 +83,9 @@ class Signatures
             function ($data)
             {
                 return [
-                    sprintf("<fg=yellow>%s</>", $data["type"]),
+                    \sprintf("<fg=yellow>%s</>", $data["type"]),
                     $data["fileName"],
-                    sprintf("<fg=blue>%s</>", md5($data["digest"]))
+                    \sprintf("<fg=blue>%s</>", \md5($data["digest"])),
                 ];
             },
             $this->detectedFiles

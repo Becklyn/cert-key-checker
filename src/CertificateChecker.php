@@ -1,7 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Becklyn\CertKeyChecker;
 
+use Becklyn\CertKeyChecker\Exception\MultipleFilesOfTypeException;
 
 class CertificateChecker
 {
@@ -30,11 +31,10 @@ class CertificateChecker
 
 
     /**
-     * @param string $dir
      */
     public function __construct (string $dir)
     {
-        $this->dir = rtrim($dir, "/");
+        $this->dir = \rtrim($dir, "/");
         $this->key = $this->loadFile("key", "key");
         $this->cert = $this->loadFile("{crt,pem}", "cert");
         $this->csr = $this->loadFile("csr", "csr");
@@ -42,17 +42,15 @@ class CertificateChecker
 
 
     /**
-     * @param string $extension
-     * @param string $fileType
      * @return string
      */
     private function loadFile (string $extension, string $fileType) : ?string
     {
-        $files = glob("{$this->dir}/*.{$extension}", \GLOB_BRACE);
+        $files = \glob("{$this->dir}/*.{$extension}", \GLOB_BRACE);
 
-        if (count($files) > 1)
+        if (\count($files) > 1)
         {
-            throw new \RuntimeException("Multiple {$fileType} files found.");
+            throw new MultipleFilesOfTypeException("Multiple {$fileType} files found.");
         }
 
         return $files[0] ?? null;
@@ -60,7 +58,6 @@ class CertificateChecker
 
 
     /**
-     * @return string
      */
     public function getSignatures () : Signatures
     {
@@ -71,7 +68,7 @@ class CertificateChecker
             $signatures->addDetectedFile(
                 "key",
                 $this->relativeFilePath($this->key),
-                shell_exec('openssl rsa -noout -modulus -in ' . escapeshellarg($this->key))
+                \shell_exec('openssl rsa -noout -modulus -in ' . \escapeshellarg($this->key))
             );
         }
 
@@ -80,7 +77,7 @@ class CertificateChecker
             $signatures->addDetectedFile(
                 "cert",
                 $this->relativeFilePath($this->cert),
-                shell_exec('openssl x509 -noout -modulus -in ' . escapeshellarg($this->cert))
+                \shell_exec('openssl x509 -noout -modulus -in ' . \escapeshellarg($this->cert))
             );
         }
 
@@ -89,7 +86,7 @@ class CertificateChecker
             $signatures->addDetectedFile(
                 "csr",
                 $this->relativeFilePath($this->csr),
-                shell_exec('openssl req -noout -modulus -in ' . escapeshellarg($this->csr))
+                \shell_exec('openssl req -noout -modulus -in ' . \escapeshellarg($this->csr))
             );
         }
 
@@ -99,17 +96,14 @@ class CertificateChecker
 
     /**
      * Returns the relative path name
-     *
-     * @param string $fullPath
-     * @return string
      */
     private function relativeFilePath (string $fullPath) : string
     {
         $dir = "{$this->dir}/";
-        $length = strlen($dir);
+        $length = \strlen($dir);
 
         return ($dir === \substr($fullPath, 0, $length))
-            ? substr($fullPath, $length)
+            ? \substr($fullPath, $length)
             : $fullPath;
     }
 }
