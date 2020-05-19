@@ -2,6 +2,7 @@
 
 namespace Becklyn\CertKeyChecker;
 
+use Becklyn\CertKeyChecker\Exception\CertKeyCheckerException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -60,7 +61,7 @@ class CertCheckCommand extends Command
             $io->error("Digest mismatch");
             return 1;
         }
-        catch (\RuntimeException $e)
+        catch (CertKeyCheckerException $e)
         {
             $io->error($e->getMessage());
             return 1;

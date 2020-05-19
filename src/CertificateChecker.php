@@ -2,6 +2,8 @@
 
 namespace Becklyn\CertKeyChecker;
 
+use Becklyn\CertKeyChecker\Exception\MultipleFilesOfTypeException;
+
 class CertificateChecker
 {
     /**
@@ -48,7 +50,7 @@ class CertificateChecker
 
         if (\count($files) > 1)
         {
-            throw new \RuntimeException("Multiple {$fileType} files found.");
+            throw new MultipleFilesOfTypeException("Multiple {$fileType} files found.");
         }
 
         return $files[0] ?? null;
