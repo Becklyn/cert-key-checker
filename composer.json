@@ -3,8 +3,8 @@
     "description": "Checks that a certificate / key / csr matches in a given directory.",
     "license": "BSD-3-Clause",
     "require": {
-        "php": "^7.1",
-        "symfony/console": "^3.3 | ^4.0"
+        "php": "^7.4",
+        "symfony/console": "^5.0"
     },
     "autoload": {
         "psr-4": {
